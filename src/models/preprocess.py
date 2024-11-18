@@ -77,7 +77,7 @@ try:
         ('cat', categorical_transformer, cat_features)
     ])
     
-    X_encoded = preprocessor.fit_transform(X_train)
+    X_encoded = preprocessor.fit_transform(X)
     print('Dados pré-processados com sucesso')
 except Exception as err:
     print(f'{err}: ocorreu um erro ao preprocessar os dados.')

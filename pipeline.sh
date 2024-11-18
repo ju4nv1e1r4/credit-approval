@@ -17,10 +17,4 @@ python3 src/models/preprocess.py
 echo -e "${CYAN}Treinando o modelo...${RESET}"
 python3 src/models/train.py
 
-echo -e "${CYAN}Prevendo os dados e salvando em um dataframe...${RESET}"
-python3 src/models/predict.py
-
-echo -e "${CYAN}Construindo dashboard de monitoramento...${RESET}"
-streamlit run src/monitoring.py
-
 echo -e "${GREEN}Pipeline executado com sucesso!${RESET}"

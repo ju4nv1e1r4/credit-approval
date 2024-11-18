@@ -1,0 +1,17 @@
+digest: 3c7a3210
+name: dataset
+profile: '{"num_rows": 2006, "num_elements": 24072}'
+schema: '{"mlflow_colspec": [{"type": "long", "name": "personal_loan", "required":
+  true}, {"type": "string", "name": "education", "required": true}, {"type": "long",
+  "name": "securities_account", "required": true}, {"type": "long", "name": "cd_account",
+  "required": true}, {"type": "long", "name": "online", "required": true}, {"type":
+  "double", "name": "cat__age_bracket_name_Baby boomers", "required": false}, {"type":
+  "double", "name": "cat__age_bracket_name_Generation X", "required": false}, {"type":
+  "double", "name": "cat__age_bracket_name_Generation Z", "required": false}, {"type":
+  "double", "name": "cat__age_bracket_name_Millennials", "required": false}, {"type":
+  "double", "name": "cat__education_ensino_medio", "required": false}, {"type": "double",
+  "name": "cat__education_ensino_superior", "required": false}, {"type": "double",
+  "name": "cat__education_pos_graduacao", "required": false}]}'
+source: '{"tags": {"mlflow.user": "juanvieira", "mlflow.source.name": "src/models/train.py",
+  "mlflow.source.type": "LOCAL", "mlflow.source.git.commit": "4d218ca882cea189a1a1e4964df7f60f63e58b0b"}}'
+source_type: code

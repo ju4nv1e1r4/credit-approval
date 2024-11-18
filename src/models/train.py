@@ -4,8 +4,8 @@ import argparse
 
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-import xgboost
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from imblearn.under_sampling import RandomUnderSampler
+from sklearn.metrics import accuracy_score, precision_score, recall_score
 import mlflow
 
 import warnings
@@ -13,16 +13,6 @@ warnings.filterwarnings("ignore")
 
 def parse_arg():
     parser = argparse.ArgumentParser(description='Credit System ML Predictor')
-    parser.add_argument(
-        '--learning-rate',
-        type=float,
-        default=0.01,
-        help="""
-    In machine learning and statistics, the learning rate is a tuning parameter
-    in an optimization algorithm that determines the step size at each iteration
-    while moving toward a minimum of a loss function.
-    """
-    )
     parser.add_argument(
         '--n-estimators',
         type=int,
@@ -44,53 +34,21 @@ def parse_arg():
     parser.add_argument(
         '--max-depth',
         type=int,
-        default=3,
+        default=5,
         help='''
         The maximum depth of the tree. If None, then nodes are 
         expanded until all leaves are pure or until all leaves 
         contain less than min_samples_split samples.  
     '''
     )
-    parser.add_argument(
-        '--random-state',
-        type=int,
-        default=42,
-        help='''
-        Controls both the randomness of the bootstrapping of the 
-        samples used when building trees (if bootstrap=True) and 
-        the sampling of the features to consider when looking for 
-        the best split at each node (if max_features < n_features). 
-    '''
-    )
-    parser.add_argument(
-        '--class-weight',
-        type=dict,
-        default=None,
-        help='''
-        Weights associated with classes in the form "class_label: weight". 
-        If not given, all classes are supposed to have weight one. 
-        For multi-output problems, a list of dicts can be provided in the 
-        same order as the columns of y. 
-    '''
-    )
-    parser.add_argument(
-        '--max-features',
-        type=str,
-        default='sqrt',
-        help='''
-        The number of features to consider when looking for the best split
-    '''
-    )
-
-
     return parser.parse_args()
 
 data = pd.read_csv('data/preprocessed/preprocessed_data_combined.csv')
 
-features = ['personal_loan','securities_account','cd_account','online',
-            'cat__age_bracket_name_Baby boomers','cat__age_bracket_name_Generation X',
-            'cat__age_bracket_name_Generation Z','cat__age_bracket_name_Millennials',
-            'cat__education_ensino_medio','cat__education_ensino_superior',
+features = ['personal_loan', 'securities_account', 'cd_account', 'online',
+            'cat__age_bracket_name_Baby boomers', 'cat__age_bracket_name_Generation X',
+            'cat__age_bracket_name_Generation Z', 'cat__age_bracket_name_Millennials',
+            'cat__education_ensino_medio', 'cat__education_ensino_superior',
             'cat__education_pos_graduacao']
 
 X, y = data[features], data['credit_card']
@@ -101,34 +59,34 @@ X_train, X_test, y_train, y_test = train_test_split(
     random_state=42
 )
 
+rus = RandomUnderSampler(random_state=42)
+
+X_res, y_res = rus.fit_resample(X_train, y_train)
+
 def main():
     args = parse_arg()
+    rf_params = {'n_estimators': args.n_estimators,
+                 'criterion': args.criterion,
+                 'max_depth': args.max_depth}
 
-    xgb_params = {'learning_rate': args.learning_rate,
-                  'max_depth': args.max_depth,
-                  'n_estimators': args.n_estimators}
-    
     mlflow.set_tracking_uri('http://127.0.0.1:5000')
-    mlflow.set_experiment('xgb-classifier')
+    mlflow.set_experiment('test-model')
 
-    with mlflow.start_run(run_name='XGBClassifier-CreditApproval'):
-        mlflow.xgboost.autolog()
-        xgb_model = xgboost.XGBClassifier(**xgb_params)
-        xgb_model.fit(X_train, y_train)
-        y_pred_xgb = xgb_model.predict(X_test)
+    with mlflow.start_run(run_name='RandomForestClassifier-CreditApproval'):
+        mlflow.sklearn.autolog()
+        rf_model = RandomForestClassifier(**rf_params)
+        rf_model.fit(X_res, y_res)
+        y_pred = rf_model.predict(X_test)
 
-        acc = accuracy_score(y_pred_xgb, y_test)
-        precision = precision_score(y_pred_xgb, y_test)
-        recall = recall_score(y_pred_xgb, y_test)
-        f1 = f1_score(y_pred_xgb, y_test)
-        print('>>> Acurácia do XGBClassifier: {}'.format(acc))
-        print('>>> Precisão do XGBClassifier: {}'.format(precision))
-        print('>>> Revocação do XGBClassifier: {}'.format(recall))
-        print('>>> F1 Score do XGBClassifier: {}'.format(f1))
+        acc = accuracy_score(y_pred, y_test)
+        precision = precision_score(y_pred, y_test)
+        recall = recall_score(y_pred, y_test)
+        print('Acurácia: {}'.format(acc))
+        print('Precisão: {}'.format(precision))
+        print('Revocação: {}'.format(recall))
         mlflow.log_metric('Acurácia', acc)
-        mlflow.log_metric('Precisão', precision)
         mlflow.log_metric('Revocação', recall)
-        mlflow.log_metric('F1 Score', f1)
+        mlflow.log_metric('Precisão', precision)
 
 if __name__ == '__main__':
     main()
